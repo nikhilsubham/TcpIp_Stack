@@ -3,8 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-void
-insert_link_between_two_nodes(node_t *node1,
+void insert_link_between_two_nodes(node_t *node1,
         node_t *node2,
         char *from_if_name,
         char *to_if_name,
@@ -42,7 +41,9 @@ graph_t * create_new_graph(char *topology_name)
     strncpy(graph->topology_name, topology_name, 32);
     graph->topology_name[32] = '\0';
 
-    init_glthread(&graph->node_list);
+    //init_glthread(&graph->node_list);
+    graph->base_glthread_ptr.base_glthread_node = NULL;
+    graph->base_glthread_ptr.last_glthread_node = NULL;
     return graph;
 }
 
@@ -54,23 +55,24 @@ node_t * create_graph_node(graph_t *graph, char *node_name)
     node->node_name[NODE_NAME_SIZE] = '\0';
 
     init_glthread(&node->graph_glue);
-    glthread_add_next(&graph->node_list, &node->graph_glue);
+    glthread_add_last(&graph->base_glthread_ptr, &node->graph_glue);
     return node;
 }
 
 
 void dump_graph(graph_t *graph)
 {
-    glthread_t *curr;
+    glthread_node_t *curr;
     node_t *node;
     
     printf("Topology Name = %s\n", graph->topology_name);
+    glthread_node_t *base_glthread_node =  graph->base_glthread_ptr.base_glthread_node;
 
-    ITERATE_GLTHREAD_BEGIN(&graph->node_list, curr){
+    ITERATE_GLTHREAD_BEGIN(base_glthread_node, curr){
 
         node = graph_glue_to_node(curr);
         dump_node(node);    
-    } ITERATE_GLTHREAD_END(&graph->node_list, curr);
+    } ITERATE_GLTHREAD_END(base_glthread_node, curr);
 }
 
 

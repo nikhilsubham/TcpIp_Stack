@@ -4,7 +4,6 @@
 #include <assert.h>
 #include "gluethread/glthread.h"
 
-
 #define NODE_NAME_SIZE   16
 #define IF_NAME_SIZE     16
 #define MAX_INTF_PER_NODE   10
@@ -31,7 +30,7 @@ struct node_ {
 
     char node_name[NODE_NAME_SIZE];
     interface_t *intf[MAX_INTF_PER_NODE];
-    glthread_t graph_glue;
+    glthread_node_t graph_glue;
 };
 
 GLTHREAD_TO_STRUCT(graph_glue_to_node, node_t, graph_glue);
@@ -39,8 +38,10 @@ GLTHREAD_TO_STRUCT(graph_glue_to_node, node_t, graph_glue);
 typedef struct graph_{
 
     char topology_name[32];
-    glthread_t node_list; 
+    //glthread_t node_list; 
+    glthread_base_t base_glthread_ptr;
 } graph_t;
+
 
 node_t * create_graph_node(graph_t *graph, char *node_name);
 
@@ -51,6 +52,13 @@ void insert_link_between_two_nodes(node_t *node1,
                              char *from_if_name, 
                              char *to_if_name, 
                              unsigned int cost);
+/*Display Routines*/
+void dump_graph(graph_t *graph);
+
+void dump_node(node_t *node);
+
+void dump_interface(interface_t *interface);
+
 
 
 /*Helper functions*/
@@ -81,10 +89,7 @@ static inline int get_node_intf_available_slot(node_t *node)
 }
 
 
-/*Display Routines*/
-void dump_graph(graph_t *graph);
-void dump_node(node_t *node);
-void dump_interface(interface_t *interface);
+
 
 
 #endif /* __NW_GRAPH_ */
