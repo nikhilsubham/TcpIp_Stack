@@ -1,145 +1,148 @@
-#include "glthread1.h"
+#include "glthread.h"
 #include <stdlib.h>
 
-void init_glthread(glthread_t *glthread)
+void init_glthread(glthread_node_t *glthread_node)
 {
-
-    glthread->left = NULL;
-    glthread->right = NULL;
+    glthread_node->left = NULL;
+    glthread_node->right = NULL;
 }
 
 
-void glthread_add_last(glthread_base_t *base_glthread_pointer, glthread_t *new_glthread)
+void glthread_add_last(glthread_base_t *base_glthread_pointer, glthread_node_t *new_glthread_node)
 {
-    if(!base_glthread_pointer->base_glthread)
+    if(!new_glthread_node)
+      return;
+
+    if(!base_glthread_pointer->base_glthread_node)
        {
-         base_glthread_pointer->base_glthread = new_glthread;
-         base_glthread_pointer->last_glthread = new_glthread;
+         base_glthread_pointer->base_glthread_node = new_glthread_node;
+         base_glthread_pointer->last_glthread_node = new_glthread_node;
          return;
        }
 
-    if(!new_glthread)
-      return;
-    
-    glthread_t* last  = base_glthread_pointer -> last_glthread;
-
-    last->right = new_glthread;
-    new_glthread->left = last;
-
-    base_glthread_pointer -> last_glthread = new_glthread;
+    glthread_node_t* last_node  = base_glthread_pointer -> last_glthread_node;
+    last_node->right = new_glthread_node;
+    new_glthread_node->left = last_node;
+    base_glthread_pointer -> last_glthread_node = new_glthread_node;
     return;
 }
 
 
-void glthread_add_next(glthread_base_t *base_glthread_pointer, glthread_t *curr_glthread, glthread_t *new_glthread)
+void glthread_add_next(glthread_base_t *base_glthread_pointer, glthread_node_t *curr_glthread_node, glthread_node_t *new_glthread_node)
 {
+   if(!new_glthread_node)
+      return;
 
-   if(base_glthread_pointer -> base_glthread == NULL && curr_glthread == NULL)
+   if(base_glthread_pointer -> base_glthread_node != NULL && curr_glthread_node == NULL)
+      return;
+   
+   if(base_glthread_pointer -> base_glthread_node == NULL && curr_glthread_node != NULL)
+      return;
+
+   if(base_glthread_pointer -> base_glthread_node == NULL && curr_glthread_node == NULL)
        {
-         base_glthread_pointer->base_glthread = new_glthread;
-         base_glthread_pointer->last_glthread = new_glthread;
+         base_glthread_pointer -> base_glthread_node = new_glthread_node;
+         base_glthread_pointer -> last_glthread_node = new_glthread_node;
          return;
        }
    
-   if(base_glthread_pointer -> base_glthread != NULL && curr_glthread == NULL)
-      return;
-
-   if(base_glthread_pointer -> base_glthread == NULL && curr_glthread != NULL)
-      return;
-
-   if(!curr_glthread->right)
+  if(!curr_glthread_node->right)
       {
-        curr_glthread->right = new_glthread;
-        new_glthread->left = curr_glthread;
-        base_glthread_pointer->last_glthread = new_glthread;
+        curr_glthread_node->right = new_glthread_node;
+        new_glthread_node->left = curr_glthread_node;
+        base_glthread_pointer->last_glthread_node = new_glthread_node;
         return;
       }
 
-    glthread_t *temp = curr_glthread->right;
-    curr_glthread->right = new_glthread;
-    new_glthread->left = curr_glthread;
-    new_glthread->right = temp;
-    temp->left = new_glthread;
+    glthread_node_t *temp_node = curr_glthread_node->right;
+    curr_glthread_node->right = new_glthread_node;
+    new_glthread_node->left = curr_glthread_node;
+    new_glthread_node->right = temp_node;
+    temp_node->left = new_glthread_node;
     return;
 }
 
 
-void glthread_add_before(glthread_base_t *base_glthread_pointer, glthread_t *curr_glthread, glthread_t *new_glthread){
+void glthread_add_before(glthread_base_t *base_glthread_pointer, glthread_node_t *curr_glthread_node, glthread_node_t *new_glthread_node)
+{
+    if(!new_glthread_node)
+       return;
 
-    if(base_glthread_pointer -> base_glthread == NULL && curr_glthread == NULL)
+    if(base_glthread_pointer -> base_glthread_node != NULL && curr_glthread_node == NULL)
+      return;
+
+    if(base_glthread_pointer -> base_glthread_node == NULL && curr_glthread_node != NULL)
+      return;
+
+    if(base_glthread_pointer -> base_glthread_node == NULL && curr_glthread_node == NULL)
        {
-         base_glthread_pointer->base_glthread = new_glthread;
-         base_glthread_pointer->last_glthread = new_glthread;
+         base_glthread_pointer->base_glthread_node = new_glthread_node;
+         base_glthread_pointer->last_glthread_node = new_glthread_node;
          return;
        }
 
-    if(base_glthread_pointer -> base_glthread != NULL && curr_glthread == NULL)
-      return;
-
-    if(base_glthread_pointer -> base_glthread == NULL && curr_glthread != NULL)
-      return;
-
-    if(!curr_glthread->left){
-        new_glthread->left = NULL;
-        new_glthread->right = curr_glthread;
-        curr_glthread->left = new_glthread;
-        base_glthread_pointer->base_glthread = new_glthread;
+    if(!curr_glthread_node->left)
+      {
+        new_glthread_node->left = NULL;
+        new_glthread_node->right = curr_glthread_node;
+        curr_glthread_node->left = new_glthread_node;
+        base_glthread_pointer->base_glthread_node = new_glthread_node;
         return;
-    }
+      }
     
-    glthread_t *temp = curr_glthread->left;
-    temp->right = new_glthread;
-    new_glthread->left = temp;
-    new_glthread->right = curr_glthread;
-    curr_glthread->left = new_glthread;
+    glthread_node_t *temp_node = curr_glthread_node->left;
+    temp_node->right = new_glthread_node;
+    new_glthread_node->left = temp_node;
+    new_glthread_node->right = curr_glthread_node;
+    curr_glthread_node->left = new_glthread_node;
     return;
 }
 
 
 
-void remove_glthread(glthread_base_t *base_glthread_pointer, glthread_t *curr_glthread){
+void remove_glthread(glthread_base_t *base_glthread_pointer, glthread_node_t *curr_glthread_node)
+{
+    if(curr_glthread_node==NULL)
+       return;
     
-    if(base_glthread_pointer -> base_glthread == NULL)
+    if(base_glthread_pointer -> base_glthread_node == NULL)
        return;
      
-    if(curr_glthread==NULL)
-       return;
-
-    if(!curr_glthread->left)
+     if(!curr_glthread_node->left)
      {
-        if(curr_glthread->right)
+        if(curr_glthread_node->right)
           {
-            base_glthread_pointer->base_glthread = curr_glthread->right;
-            curr_glthread->right->left = NULL;
-            curr_glthread->right = 0;
+            base_glthread_pointer->base_glthread_node = curr_glthread_node->right;
+            curr_glthread_node->right->left = NULL;
+            curr_glthread_node->right = 0;
             return;
           }
-        base_glthread_pointer->base_glthread = NULL;
-        base_glthread_pointer->last_glthread = NULL;
+        base_glthread_pointer->base_glthread_node = NULL;
+        base_glthread_pointer->last_glthread_node = NULL;
         return;
      }
-    if(!curr_glthread->right){
-        base_glthread_pointer->last_glthread = curr_glthread->left;
-        curr_glthread->left->right = NULL;
-        curr_glthread->left = NULL;
+    if(!curr_glthread_node->right){
+        base_glthread_pointer->last_glthread_node = curr_glthread_node->left;
+        curr_glthread_node->left->right = NULL;
+        curr_glthread_node->left = NULL;
         return;
     }
 
-    curr_glthread->left->right = curr_glthread->right;
-    curr_glthread->right->left = curr_glthread->left;
-    curr_glthread->left = 0;
-    curr_glthread->right = 0;
+    curr_glthread_node->left->right = curr_glthread_node->right;
+    curr_glthread_node->right->left = curr_glthread_node->left;
+    curr_glthread_node->left = 0;
+    curr_glthread_node->right = 0;
 }
 
 
 void delete_glthread_list(glthread_base_t *base_glthread_pointer){
 
-    glthread_t *glthreadptr = NULL;
-    glthread_t *base_glthread =  base_glthread_pointer-> base_glthread;
+    glthread_node_t *glthreadptr_node = NULL;
+    glthread_node_t *base_glthread_node =  base_glthread_pointer-> base_glthread_node;
           
-    ITERATE_GLTHREAD_BEGIN(base_glthread, glthreadptr){
-        remove_glthread(base_glthread_pointer, glthreadptr);
-    } ITERATE_GLTHREAD_END(base_glthread, glthreadptr);
+    ITERATE_GLTHREAD_BEGIN(base_glthread_node, glthreadptr_node){
+        remove_glthread(base_glthread_pointer, glthreadptr_node);
+    } ITERATE_GLTHREAD_END(base_glthread, glthreadptr_node);
 }
 
 
@@ -147,61 +150,59 @@ void delete_glthread_list(glthread_base_t *base_glthread_pointer){
 unsigned int get_glthread_list_count(glthread_base_t *base_glthread_pointer){
 
     unsigned int count = 0;
-    glthread_t *glthreadptr = NULL;
-    glthread_t *base_glthread =  base_glthread_pointer-> base_glthread;
+    glthread_node_t *glthreadptr_node = NULL;
+    glthread_node_t *base_glthread_node =  base_glthread_pointer-> base_glthread_node;
 
-    ITERATE_GLTHREAD_BEGIN(base_glthread, glthreadptr){
+    ITERATE_GLTHREAD_BEGIN(base_glthread_node, glthreadptr_node){
         count++;
-    } ITERATE_GLTHREAD_END(base_glthread, glthreadptr);
+    } ITERATE_GLTHREAD_END(base_glthread_node, glthreadptr_node);
     return count;
 }
 
 
 void glthread_priority_insert(glthread_base_t *base_glthread_pointer,
-                         glthread_t *glthread,
+                         glthread_node_t *glthread_node,
                          int (*comp_fn)(void *, void *),
                          int offset){
 
-    glthread_t *curr = NULL,
-               *prev = NULL;
-    glthread->left = NULL;
-    glthread->right = NULL;
+    glthread_node_t *curr = NULL,
+                    *prev = NULL;
+    glthread_node -> left = NULL;
+    glthread_node -> right = NULL;
 
-    glthread_t *base_glthread = base_glthread_pointer->base_glthread;
-    init_glthread(glthread);
+    glthread_node_t *base_glthread_node = base_glthread_pointer->base_glthread_node;
+    init_glthread(glthread_node);
     
-   if(!base_glthread)
+   if(!base_glthread_node)
       {
-       glthread_add_next(base_glthread_pointer, NULL, glthread);
+       glthread_add_next(base_glthread_pointer, NULL, glthread_node);
        return;
       }
    
-
     /* Only one node*/
-    if(!base_glthread->right && !base_glthread->left)
+    if(!base_glthread_node->right && !base_glthread_node->left)
         {
-         if(comp_fn(GLTHREAD_GET_USER_DATA_FROM_OFFSET(base_glthread,offset),GLTHREAD_GET_USER_DATA_FROM_OFFSET(glthread,offset))==-1) 		     glthread_add_before(base_glthread_pointer, base_glthread,glthread);
+      if(comp_fn(GLTHREAD_GET_USER_DATA_FROM_OFFSET(base_glthread_node,offset),GLTHREAD_GET_USER_DATA_FROM_OFFSET(glthread_node,offset))==-1) 		      glthread_add_before(base_glthread_pointer, base_glthread_node,glthread_node);
          else
-             glthread_add_next(base_glthread_pointer, base_glthread, glthread);
+              glthread_add_next(base_glthread_pointer, base_glthread_node, glthread_node);
          return;
        }
 
-    while(base_glthread)
+    while(base_glthread_node)
      {
-        if(comp_fn(GLTHREAD_GET_USER_DATA_FROM_OFFSET(base_glthread, offset), GLTHREAD_GET_USER_DATA_FROM_OFFSET(glthread, offset)) == 1)
+    if(comp_fn(GLTHREAD_GET_USER_DATA_FROM_OFFSET(base_glthread_node, offset), GLTHREAD_GET_USER_DATA_FROM_OFFSET(glthread_node, offset))== 1)
           {
-              base_glthread = base_glthread->right;
+              base_glthread_node = base_glthread_node->right;
               continue;
           }
         else
           {
-             glthread_add_before(base_glthread_pointer, base_glthread, glthread);
+             glthread_add_before(base_glthread_pointer, base_glthread_node, glthread_node);
              return;
           }
      }
-
     /*Add in the end*/
-    glthread_add_last(base_glthread_pointer, glthread);
+    glthread_add_last(base_glthread_pointer, glthread_node);
 } 
 
 
